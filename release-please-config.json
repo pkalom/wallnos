@@ -1,7 +1,7 @@
 {
   "packages": {
     ".": {
-      "release-type": "php",
+      "release-type": "node",
       "changelog-sections": [
         { "type": "feat!", "section": "!!BREAKING CHANGES!!" },
         { "type": "feat", "section": "Features" },
