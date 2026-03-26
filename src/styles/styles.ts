@@ -1,4 +1,8 @@
-export const styles = {
+import type { CSSProperties } from "react";
+
+type StyleMap = Record<string, CSSProperties>;
+
+export const styles: StyleMap = {
   root: {
     minHeight: "100vh",
     background: "var(--bg)",

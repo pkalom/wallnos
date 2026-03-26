@@ -69,6 +69,42 @@ styleEl.textContent = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   ::-webkit-scrollbar { display: none; }
   body { background: var(--bg); transition: background 0.3s; }
+
+  @media (max-width: 768px) {
+    .wallnos-header-inner {
+      flex-wrap: wrap;
+      height: auto !important;
+      padding: 10px 0 !important;
+      gap: 8px !important;
+    }
+    .wallnos-search-wrap {
+      order: 3;
+      max-width: 100% !important;
+      width: 100%;
+    }
+    .wallnos-header-right {
+      order: 2;
+      margin-left: auto;
+    }
+    .wallnos-view-modes { display: none !important; }
+    .wallnos-main { padding: 16px 12px 60px !important; }
+    .wallnos-hero { height: 260px !important; }
+    .wallnos-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .wallnos-grid-large { grid-template-columns: 1fr !important; }
+    .wallnos-overlay-content {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-radius: 12px 12px 0 0 !important;
+      position: fixed !important;
+      bottom: 0 !important;
+      max-height: 92vh !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .wallnos-grid { grid-template-columns: 1fr !important; }
+    .wallnos-hero { height: 200px !important; }
+  }
 `;
 document.head.appendChild(styleEl);
 

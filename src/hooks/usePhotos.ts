@@ -1,13 +1,14 @@
 import { useState, useCallback } from "react";
+import type { Photo } from "../types";
 import { UNSPLASH_ACCESS_KEY, DEMO_PHOTOS } from "../constants/categories";
 
 export function usePhotos() {
-  const [photos, setPhotos] = useState([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [usingDemo, setUsingDemo] = useState(false);
 
-  const fetchPhotos = useCallback(async (query, pg = 1, append = false) => {
+  const fetchPhotos = useCallback(async (query: string, pg = 1, append = false) => {
     setLoading(true);
     try {
       if (!UNSPLASH_ACCESS_KEY || UNSPLASH_ACCESS_KEY === "YOUR_UNSPLASH_ACCESS_KEY") {

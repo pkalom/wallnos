@@ -1,6 +1,8 @@
-export const UNSPLASH_ACCESS_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY || "YOUR_UNSPLASH_ACCESS_KEY";
+import type { Category, Photo } from "../types";
 
-export const CATEGORIES = [
+export const UNSPLASH_ACCESS_KEY: string = import.meta.env.VITE_UNSPLASH_ACCESS_KEY || "YOUR_UNSPLASH_ACCESS_KEY";
+
+export const CATEGORIES: Category[] = [
   { label: "All", query: "wallpaper" },
   { label: "Nature", query: "nature landscape" },
   { label: "Architecture", query: "architecture minimal" },
@@ -11,7 +13,7 @@ export const CATEGORIES = [
   { label: "Forest", query: "forest trees" },
 ];
 
-export const DEMO_PHOTOS = Array.from({ length: 20 }, (_, i) => ({
+export const DEMO_PHOTOS: Photo[] = Array.from({ length: 20 }, (_, i) => ({
   id: `demo-${i}`,
   urls: {
     small: `https://picsum.photos/seed/${i + 10}/400/600`,

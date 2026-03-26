@@ -1,11 +1,25 @@
 import { useState } from "react";
-import { Heart, Download, Check, Loader2 } from "lucide-react";
+import { Heart, Download, Check, Loader2, Trash2 } from "lucide-react";
+import type { Photo } from "../types";
 import { styles } from "../styles/styles";
+
+interface Props {
+  photo: Photo;
+  index: number;
+  viewMode: string;
+  isFav: boolean;
+  onToggleFav: () => void;
+  onPreview: () => void;
+  onDownload: () => void;
+  isDownloading: boolean;
+  isDownloadDone: boolean;
+  onDelete?: (() => void) | null;
+}
 
 export default function PhotoCard({
   photo, index, viewMode, isFav, onToggleFav,
-  onPreview, onDownload, isDownloading, isDownloadDone,
-}) {
+  onPreview, onDownload, isDownloading, isDownloadDone, onDelete,
+}: Props) {
   const [loaded, setLoaded] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -79,6 +93,7 @@ export default function PhotoCard({
             style={{ ...styles.iconBtn, ...(isDownloadDone ? styles.iconBtnDone : {}) }}
             onClick={e => { e.stopPropagation(); onDownload(); }}
             title="Download"
+            aria-label="Download"
           >
             {isDownloadDone
               ? <Check size={15} />
@@ -86,6 +101,16 @@ export default function PhotoCard({
                 ? <Loader2 size={15} style={{ animation: "spin 0.7s linear infinite" }} />
                 : <Download size={15} />}
           </button>
+          {onDelete && (
+            <button
+              style={{ ...styles.iconBtn, background: "rgba(220,50,50,0.55)", borderColor: "rgba(220,50,50,0.4)" }}
+              onClick={e => { e.stopPropagation(); onDelete(); }}
+              title="Remove upload"
+              aria-label="Remove upload"
+            >
+              <Trash2 size={15} />
+            </button>
+          )}
         </div>
       </div>
     </div>
