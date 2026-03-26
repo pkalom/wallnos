@@ -1,0 +1,143 @@
+# Reusable Release Please workflow.
+# - Mints a GitHub App token.
+# - Retries Release Please up to 3 times.
+
+name: (called) release-please reusable
+
+on:
+  workflow_call:
+    inputs:
+      config_file:
+        required: false
+        type: string
+        default: release-please-config.json
+        description: Optional Release Please config file
+      manifest_file:
+        required: false
+        type: string
+        default: .release-please-manifest.json
+        description: Optional Release Please manifest file
+
+## NOTE: These need to be added to the calling workflow
+# permissions:
+#   contents: write
+#   pull-requests: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+
+    env:
+      CONFIG_FILE: ${{ inputs.config_file }}
+      MANIFEST_FILE: ${{ inputs.manifest_file }}
+      RUNID: '1'
+
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - name: Release Please
+        id: rp1
+        continue-on-error: true
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          config-file: ${{ env.CONFIG_FILE }}
+          manifest-file: ${{ env.MANIFEST_FILE }}
+
+      - name: Wait before attempt 2
+        if: ${{ steps.rp1.outcome == 'failure' }}
+        run: |
+          echo "RUNID=2" >> "$GITHUB_ENV"
+          sleep 10
+
+      - name: Release Please (attempt 2)
+        id: rp2
+        if: ${{ steps.rp1.outcome == 'failure' }}
+        continue-on-error: true
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          config-file: ${{ env.CONFIG_FILE }}
+          manifest-file: ${{ env.MANIFEST_FILE }}
+
+      - name: Wait before attempt 3
+        if: ${{ steps.rp2.outcome == 'failure' }}
+        run: |
+          echo "RUNID=3" >> "$GITHUB_ENV"
+          sleep 20
+
+      - name: Release Please (attempt 3)
+        id: rp3
+        if: ${{ steps.rp2.outcome == 'failure' }}
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          config-file: ${{ env.CONFIG_FILE }}
+          manifest-file: ${{ env.MANIFEST_FILE }}
+
+      - name: Pick Release Please output
+        id: pick-rp
+        run: |
+          echo "runid=$RUNID" >> "$GITHUB_OUTPUT"
+          echo "task_out_key=rp$RUNID" >> "$GITHUB_OUTPUT"
+
+      - name: Add compare link in PR body
+        if: ${{ steps.pick-rp.outputs.task_out_key != '' && steps[steps.pick-rp.outputs.task_out_key].outputs.pr != '' }}
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          TASK_OUT_KEY: ${{ steps.pick-rp.outputs.task_out_key }}
+          PR_NUMBER: ${{ fromJSON(steps[steps.pick-rp.outputs.task_out_key].outputs.pr || '{}').number || '' }}
+          PR_TITLE: ${{ fromJSON(steps[steps.pick-rp.outputs.task_out_key].outputs.pr || '{}').title || '' }}
+          PR_BODY: ${{ fromJSON(steps[steps.pick-rp.outputs.task_out_key].outputs.pr || '{}').body || '' }}
+        run: |
+          if [ -z "$PR_NUMBER" ]; then exit 1; fi
+
+          next_ver="$(<<<"$PR_TITLE" sed -r '/: release \S+/{s/.*: release //;s/ //g;}')"
+          echo "Picked Release Please PR #$PR_NUMBER from $TASK_OUT_KEY, next version: $next_ver"
+
+          target_sha="${{ github.sha }}"
+          target_sha_short="${target_sha:0:7}"
+
+          if latest_tag="$(gh api "repos/$REPO/releases/latest" --jq .tag_name 2>/dev/null)"; then
+            echo "Found tag from Github release: $latest_tag"
+          else
+            latest_tag="$(gh api "repos/$REPO/tags?per_page=1" --jq '.[0].name')"
+            echo "No GitHub Release found; using latest Git tag: $latest_tag"
+          fi
+
+          compare_line=":twisted_rightwards_arrows: [Compare: No previous release tag found]()"
+          if [ -n "$latest_tag" ]; then
+            compare_url="https://github.com/$REPO/compare/${latest_tag}...${target_sha}"
+            compare_label="${latest_tag}...${next_ver:-$target_sha_short} (next release)"
+            compare_line=":twisted_rightwards_arrows: [Compare: ${compare_label}](${compare_url})"
+          fi
+
+          footer_line="This PR was generated with [Release Please](https://github.com/googleapis/release-please)."
+          current_body="$PR_BODY"
+
+          cleaned_body="$(awk '
+            $0 ~ /^This PR was generated with / { next }
+            $0 ~ /^[^[:space:]]*\[Compare: / { next; next; }
+            { print }
+          ' <<< "$current_body")"
+          cleaned_body="${cleaned_body%"${cleaned_body##*[![:space:]]}"}"
+
+          updated_body="${compare_line}"$'\n\n'"${cleaned_body}"$'\n'"${footer_line}"
+
+          if [ "$updated_body" = "$current_body" ]; then
+            echo "PR #${PR_NUMBER} already up to date."
+            exit 0
+          fi
+
+          gh api -X PATCH "repos/${REPO}/pulls/${PR_NUMBER}" -f body="${updated_body}" >/dev/null
+          echo "Updated PR #${PR_NUMBER}: compare line + footer refreshed."

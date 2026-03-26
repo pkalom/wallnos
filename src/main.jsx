@@ -2,12 +2,73 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 
+// Prevent dark mode flash before React renders
+if (localStorage.getItem("wp_dark") === "1") {
+  document.body.classList.add("dark");
+}
+
 const styleEl = document.createElement("style");
 styleEl.textContent = `
-  @keyframes spin { to { transform: rotate(360deg); } }
+  :root {
+    --bg: #fafafa;
+    --bg-header: rgba(250,250,250,0.92);
+    --bg-card: #eeeeee;
+    --bg-search: #f0f0f0;
+    --border: #ebebeb;
+    --border-ui: #dddddd;
+    --text: #111111;
+    --text-sec: #666666;
+    --text-muted: #999999;
+    --spinner-track: #dddddd;
+    --spinner-head: #111111;
+    --active-bg: #111111;
+    --active-text: #ffffff;
+    --notice-bg: #fff8e1;
+    --notice-text: #7a6000;
+    --notice-border: #ffe082;
+    --shimmer-highlight: rgba(255,255,255,0.22);
+    --view-pill-bg: #ffffff;
+  }
+  body.dark {
+    --bg: #0f0f0f;
+    --bg-header: rgba(15,15,15,0.92);
+    --bg-card: #1e1e1e;
+    --bg-search: #1a1a1a;
+    --border: #2a2a2a;
+    --border-ui: #333333;
+    --text: #f0f0f0;
+    --text-sec: #aaaaaa;
+    --text-muted: #555555;
+    --spinner-track: #333333;
+    --spinner-head: #f0f0f0;
+    --active-bg: #f0f0f0;
+    --active-text: #111111;
+    --notice-bg: #1f1800;
+    --notice-text: #d4a017;
+    --notice-border: #3d2e00;
+    --shimmer-highlight: rgba(255,255,255,0.07);
+    --view-pill-bg: #2a2a2a;
+  }
+  @keyframes spin    { to { transform: rotate(360deg); } }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.93); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position:  400px 0; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   ::-webkit-scrollbar { display: none; }
-  body { background: #fafafa; }
+  body { background: var(--bg); transition: background 0.3s; }
 `;
 document.head.appendChild(styleEl);
 

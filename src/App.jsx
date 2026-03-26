@@ -10,16 +10,27 @@ export default function App() {
   const [favorites, setFavorites] = useState(() => {
     try { return JSON.parse(localStorage.getItem("wp_favs") || "[]"); } catch { return []; }
   });
-  const [preview, setPreview] = useState(null);
+  const [previewIndex, setPreviewIndex] = useState(null);
   const [showFavs, setShowFavs] = useState(false);
   const [page, setPage] = useState(1);
   const [downloading, setDownloading] = useState(null);
+  const [downloadDone, setDownloadDone] = useState(null);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("wp_dark") === "1");
+  const [viewMode, setViewMode] = useState("grid");
+  const [copyDone, setCopyDone] = useState(false);
 
   const { photos, loading, hasMore, usingDemo, fetchPhotos } = usePhotos();
 
   const searchTimeout = useRef(null);
   const observerRef = useRef(null);
   const loadMoreRef = useRef(null);
+  const modalPhotosRef = useRef([]);
+
+  // Dark mode
+  useEffect(() => {
+    document.body.classList.toggle("dark", darkMode);
+    try { localStorage.setItem("wp_dark", darkMode ? "1" : "0"); } catch {}
+  }, [darkMode]);
 
   useEffect(() => {
     const query = search.trim() || CATEGORIES[activeCategory].query;
@@ -55,6 +66,24 @@ export default function App() {
     return () => observerRef.current?.disconnect();
   }, [loading, hasMore, page, search, activeCategory]);
 
+  // Keyboard navigation — uses ref so closure is always fresh
+  useEffect(() => {
+    if (previewIndex === null) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") { setPreviewIndex(null); setCopyDone(false); }
+      if (e.key === "ArrowLeft") {
+        setPreviewIndex(i => Math.max(0, i - 1));
+        setCopyDone(false);
+      }
+      if (e.key === "ArrowRight") {
+        setPreviewIndex(i => Math.min(modalPhotosRef.current.length - 1, i + 1));
+        setCopyDone(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [previewIndex]);
+
   const toggleFav = (photo) => {
     setFavorites(prev =>
       prev.find(p => p.id === photo.id)
@@ -76,6 +105,8 @@ export default function App() {
       a.download = `wallpaper-${photo.id}.jpg`;
       a.click();
       URL.revokeObjectURL(url);
+      setDownloadDone(photo.id);
+      setTimeout(() => setDownloadDone(d => d === photo.id ? null : d), 2000);
     } catch {
       window.open(photo.urls.full, "_blank");
     } finally {
@@ -83,7 +114,50 @@ export default function App() {
     }
   };
 
-  const displayedPhotos = showFavs ? favorites : photos;
+  const copyLink = async (photo) => {
+    try {
+      await navigator.clipboard.writeText(photo.urls.regular);
+      setCopyDone(true);
+      setTimeout(() => setCopyDone(false), 2000);
+    } catch {}
+  };
+
+  // Derived
+  const showHero = !showFavs && !search && photos.length > 0;
+  const heroPhoto = showHero ? photos[0] : null;
+  const displayedPhotos = showFavs ? favorites : showHero ? photos.slice(1) : photos;
+  const modalPhotos = showFavs ? favorites : photos;
+  modalPhotosRef.current = modalPhotos;
+
+  const isFreshLoading = loading && page === 1;
+  const preview = previewIndex !== null ? modalPhotos[previewIndex] : null;
+
+  const openPreview = (photo) => {
+    const idx = modalPhotos.findIndex(p => p.id === photo.id);
+    setPreviewIndex(idx !== -1 ? idx : 0);
+    setCopyDone(false);
+  };
+
+  const closePreview = () => { setPreviewIndex(null); setCopyDone(false); };
+
+  const navModal = (dir) => {
+    setPreviewIndex(i => {
+      const next = i + dir;
+      if (next < 0 || next >= modalPhotosRef.current.length) return i;
+      return next;
+    });
+    setCopyDone(false);
+  };
+
+  const getGridStyle = () => {
+    const fade = {
+      opacity: isFreshLoading && photos.length > 0 ? 0.35 : 1,
+      transition: "opacity 0.3s",
+    };
+    if (viewMode === "masonry") return { columnWidth: "260px", columnGap: "16px", ...fade };
+    if (viewMode === "large")   return { ...styles.gridLarge, ...fade };
+    return { ...styles.grid, ...fade };
+  };
 
   return (
     <div style={styles.root}>
@@ -92,7 +166,7 @@ export default function App() {
         <div style={styles.headerInner}>
           <div style={styles.logo}>
             <span style={styles.logoMark}>◈</span>
-            <span style={styles.logoText}>Walls</span>
+            <span style={styles.logoText}>WallNos</span>
           </div>
           <div style={styles.searchWrap}>
             <span style={styles.searchIcon}>⌕</span>
@@ -102,16 +176,37 @@ export default function App() {
               value={search}
               onChange={e => { setSearch(e.target.value); setShowFavs(false); }}
             />
-            {search && (
+            {isFreshLoading && search ? (
+              <div style={styles.searchSpinner} />
+            ) : search ? (
               <button style={styles.clearBtn} onClick={() => setSearch("")}>×</button>
-            )}
+            ) : null}
           </div>
-          <button
-            style={{ ...styles.favToggle, ...(showFavs ? styles.favToggleActive : {}) }}
-            onClick={() => setShowFavs(v => !v)}
-          >
-            {showFavs ? "♥" : "♡"} <span style={styles.favCount}>{favorites.length}</span>
-          </button>
+          <div style={styles.headerRight}>
+            <div style={styles.viewModes}>
+              {[["grid", "⊞"], ["masonry", "⋮⋮"], ["large", "▣"]].map(([mode, icon]) => (
+                <button
+                  key={mode}
+                  style={{ ...styles.viewModeBtn, ...(viewMode === mode ? styles.viewModeBtnActive : {}) }}
+                  onClick={() => setViewMode(mode)}
+                  title={`${mode} view`}
+                >{icon}</button>
+              ))}
+            </div>
+            <button
+              style={styles.darkToggle}
+              onClick={() => setDarkMode(v => !v)}
+              title={darkMode ? "Light mode" : "Dark mode"}
+            >
+              {darkMode ? "☀" : "☾"}
+            </button>
+            <button
+              style={{ ...styles.favToggle, ...(showFavs ? styles.favToggleActive : {}) }}
+              onClick={() => setShowFavs(v => !v)}
+            >
+              {showFavs ? "♥" : "♡"} <span style={styles.favCount}>{favorites.length}</span>
+            </button>
+          </div>
         </div>
         {!showFavs && (
           <div style={styles.categories}>
@@ -135,7 +230,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Grid */}
+      {/* Main */}
       <main style={styles.main}>
         {showFavs && favorites.length === 0 ? (
           <div style={styles.empty}>
@@ -145,37 +240,82 @@ export default function App() {
           </div>
         ) : (
           <>
-            <div style={styles.grid}>
+            {/* Hero */}
+            {heroPhoto && (
+              <div style={styles.hero} onClick={() => openPreview(heroPhoto)}>
+                <img src={heroPhoto.urls.regular} alt={heroPhoto.alt_description} style={styles.heroImg} />
+                <div style={styles.heroOverlay}>
+                  <p style={styles.heroLabel}>Featured</p>
+                  <p style={styles.heroTitle}>{heroPhoto.alt_description || "Beautiful Wallpaper"}</p>
+                  <p style={styles.heroPhotographer}>by {heroPhoto.user?.name}</p>
+                  <div style={styles.heroActions}>
+                    <button
+                      style={{ ...styles.heroBtn, ...styles.heroBtnPrimary }}
+                      onClick={e => { e.stopPropagation(); openPreview(heroPhoto); }}
+                    >Preview</button>
+                    <button
+                      style={styles.heroBtn}
+                      onClick={e => { e.stopPropagation(); downloadPhoto(heroPhoto); }}
+                    >
+                      {downloadDone === heroPhoto.id ? "✓ Saved" : "↓ Download"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Initial load spinner */}
+            {isFreshLoading && photos.length === 0 && (
+              <div style={{ display: "flex", justifyContent: "center", padding: "80px 0" }}>
+                <div style={styles.spinner} />
+              </div>
+            )}
+
+            {/* Grid */}
+            <div style={getGridStyle()}>
               {displayedPhotos.map((photo, idx) => (
                 <PhotoCard
                   key={`${photo.id}-${idx}`}
                   photo={photo}
+                  index={idx}
+                  viewMode={viewMode}
                   isFav={isFav(photo.id)}
                   onToggleFav={() => toggleFav(photo)}
-                  onPreview={() => setPreview(photo)}
+                  onPreview={() => openPreview(photo)}
                   onDownload={() => downloadPhoto(photo)}
                   isDownloading={downloading === photo.id}
+                  isDownloadDone={downloadDone === photo.id}
                 />
               ))}
             </div>
+
             {!showFavs && (
               <div ref={loadMoreRef} style={styles.loadMore}>
-                {loading && <div style={styles.spinner} />}
+                {loading && page > 1 && <div style={styles.spinner} />}
               </div>
             )}
           </>
         )}
       </main>
 
-      {/* Fullscreen Preview */}
+      {/* Modal */}
       {preview && (
-        <div style={styles.overlay} onClick={() => setPreview(null)}>
+        <div style={styles.overlay} onClick={closePreview}>
           <div style={styles.overlayContent} onClick={e => e.stopPropagation()}>
-            <img
-              src={preview.urls.regular}
-              alt={preview.alt_description}
-              style={styles.previewImg}
-            />
+            <div style={{ position: "relative" }}>
+              <img
+                key={preview.id}
+                src={preview.urls.regular}
+                alt={preview.alt_description}
+                style={{ ...styles.previewImg, animation: "modalIn 0.22s ease" }}
+              />
+              {previewIndex > 0 && (
+                <button style={{ ...styles.modalNav, left: 14 }} onClick={() => navModal(-1)}>‹</button>
+              )}
+              {previewIndex < modalPhotos.length - 1 && (
+                <button style={{ ...styles.modalNav, right: 14 }} onClick={() => navModal(+1)}>›</button>
+              )}
+            </div>
             <div style={styles.previewBar}>
               <div>
                 <p style={styles.previewName}>{preview.user?.name}</p>
@@ -183,20 +323,35 @@ export default function App() {
               </div>
               <div style={styles.previewActions}>
                 <button
+                  style={{
+                    ...styles.actionBtn,
+                    ...(copyDone ? { color: "#4ade80", background: "#0a1f0a", borderColor: "#1a3a1a" } : {}),
+                  }}
+                  onClick={() => copyLink(preview)}
+                  title="Copy link"
+                >
+                  {copyDone ? "✓" : "⎘"}
+                </button>
+                <button
                   style={{ ...styles.actionBtn, ...(isFav(preview.id) ? styles.actionBtnFav : {}) }}
                   onClick={() => toggleFav(preview)}
+                  title={isFav(preview.id) ? "Remove favorite" : "Add favorite"}
                 >
                   {isFav(preview.id) ? "♥" : "♡"}
                 </button>
                 <button
-                  style={{ ...styles.actionBtn, ...styles.actionBtnDl }}
+                  style={{
+                    ...styles.actionBtn,
+                    ...(downloadDone === preview.id ? styles.actionBtnDone : styles.actionBtnDl),
+                  }}
                   onClick={() => downloadPhoto(preview)}
+                  title="Download"
                 >
-                  {downloading === preview.id ? "…" : "↓"}
+                  {downloading === preview.id ? "…" : downloadDone === preview.id ? "✓" : "↓"}
                 </button>
               </div>
             </div>
-            <button style={styles.closeBtn} onClick={() => setPreview(null)}>×</button>
+            <button style={styles.closeBtn} onClick={closePreview}>×</button>
           </div>
         </div>
       )}

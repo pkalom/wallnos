@@ -1,27 +1,70 @@
 import { useState } from "react";
 import { styles } from "../styles/styles";
 
-export default function PhotoCard({ photo, isFav, onToggleFav, onPreview, onDownload, isDownloading }) {
+export default function PhotoCard({
+  photo, index, viewMode, isFav, onToggleFav,
+  onPreview, onDownload, isDownloading, isDownloadDone,
+}) {
   const [loaded, setLoaded] = useState(false);
   const [hovered, setHovered] = useState(false);
 
+  const isMasonry = viewMode === "masonry";
+  const staggerDelay = `${Math.min(index, 15) * 55}ms`;
+
+  const cardStyle = {
+    ...styles.card,
+    ...(hovered ? styles.cardHover : {}),
+    animation: "fadeInUp 0.4s ease both",
+    animationDelay: staggerDelay,
+    ...(isMasonry ? {
+      breakInside: "avoid",
+      marginBottom: "16px",
+      display: "inline-block",
+      width: "100%",
+      aspectRatio: "auto",
+    } : {}),
+  };
+
+  const imgWrapStyle = isMasonry
+    ? { ...styles.imgWrap, height: "auto" }
+    : styles.imgWrap;
+
   return (
     <div
-      style={{ ...styles.card, ...(hovered ? styles.cardHover : {}) }}
+      style={cardStyle}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div style={styles.imgWrap} onClick={onPreview}>
-        <div style={{ ...styles.imgPlaceholder, background: photo.color || "#f0f0f0", opacity: loaded ? 0 : 1 }} />
+      <div style={imgWrapStyle} onClick={onPreview}>
+        {!isMasonry && (
+          <div style={{ ...styles.imgPlaceholder, background: photo.color || "var(--bg-card)", opacity: loaded ? 0 : 1 }}>
+            {!loaded && (
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage: "linear-gradient(90deg, transparent 0%, var(--shimmer-highlight) 50%, transparent 100%)",
+                backgroundSize: "400px 100%",
+                animation: "shimmer 1.4s infinite linear",
+              }} />
+            )}
+          </div>
+        )}
         <img
           src={photo.urls.small}
           alt={photo.alt_description}
-          style={{ ...styles.img, opacity: loaded ? 1 : 0 }}
+          style={{
+            ...styles.img,
+            ...(isMasonry ? { height: "auto" } : {}),
+            opacity: loaded ? 1 : 0,
+          }}
           onLoad={() => setLoaded(true)}
           loading="lazy"
         />
       </div>
       <div style={{ ...styles.cardOverlay, opacity: hovered ? 1 : 0 }}>
+        {photo.user?.name && (
+          <p style={styles.cardPhotographer}>{photo.user.name}</p>
+        )}
         <button style={styles.previewBtn} onClick={onPreview}>Preview</button>
         <div style={styles.cardIcons}>
           <button
@@ -32,11 +75,11 @@ export default function PhotoCard({ photo, isFav, onToggleFav, onPreview, onDown
             {isFav ? "♥" : "♡"}
           </button>
           <button
-            style={styles.iconBtn}
+            style={{ ...styles.iconBtn, ...(isDownloadDone ? styles.iconBtnDone : {}) }}
             onClick={e => { e.stopPropagation(); onDownload(); }}
             title="Download"
           >
-            {isDownloading ? "…" : "↓"}
+            {isDownloadDone ? "✓" : isDownloading ? "…" : "↓"}
           </button>
         </div>
       </div>
