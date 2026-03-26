@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import {
+  Search, X, Sun, Moon, Heart, LayoutGrid, Columns2, Maximize2,
+  ChevronLeft, ChevronRight, Copy, Check, Download, Loader2, Layers,
+} from "lucide-react";
 import { CATEGORIES } from "./constants/categories";
 import { usePhotos } from "./hooks/usePhotos";
 import PhotoCard from "./components/PhotoCard";
@@ -17,6 +21,12 @@ export default function App() {
   const [downloadDone, setDownloadDone] = useState(null);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("wp_dark") === "1");
   const [viewMode, setViewMode] = useState("grid");
+
+  const VIEW_ICONS = {
+    grid:    <LayoutGrid size={14} />,
+    masonry: <Columns2 size={14} />,
+    large:   <Maximize2 size={14} />,
+  };
   const [copyDone, setCopyDone] = useState(false);
 
   const { photos, loading, hasMore, usingDemo, fetchPhotos } = usePhotos();
@@ -165,11 +175,11 @@ export default function App() {
       <header style={styles.header}>
         <div style={styles.headerInner}>
           <div style={styles.logo}>
-            <span style={styles.logoMark}>◈</span>
+            <Layers size={20} color="var(--text)" />
             <span style={styles.logoText}>WallNos</span>
           </div>
           <div style={styles.searchWrap}>
-            <span style={styles.searchIcon}>⌕</span>
+            <Search size={17} color="var(--text-muted)" style={{ marginRight: 8, flexShrink: 0 }} />
             <input
               style={styles.searchInput}
               placeholder="Search wallpapers…"
@@ -179,18 +189,18 @@ export default function App() {
             {isFreshLoading && search ? (
               <div style={styles.searchSpinner} />
             ) : search ? (
-              <button style={styles.clearBtn} onClick={() => setSearch("")}>×</button>
+              <button style={styles.clearBtn} onClick={() => setSearch("")}><X size={16} /></button>
             ) : null}
           </div>
           <div style={styles.headerRight}>
             <div style={styles.viewModes}>
-              {[["grid", "⊞"], ["masonry", "⋮⋮"], ["large", "▣"]].map(([mode, icon]) => (
+              {["grid", "masonry", "large"].map((mode) => (
                 <button
                   key={mode}
                   style={{ ...styles.viewModeBtn, ...(viewMode === mode ? styles.viewModeBtnActive : {}) }}
                   onClick={() => setViewMode(mode)}
                   title={`${mode} view`}
-                >{icon}</button>
+                >{VIEW_ICONS[mode]}</button>
               ))}
             </div>
             <button
@@ -198,13 +208,14 @@ export default function App() {
               onClick={() => setDarkMode(v => !v)}
               title={darkMode ? "Light mode" : "Dark mode"}
             >
-              {darkMode ? "☀" : "☾"}
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <button
               style={{ ...styles.favToggle, ...(showFavs ? styles.favToggleActive : {}) }}
               onClick={() => setShowFavs(v => !v)}
             >
-              {showFavs ? "♥" : "♡"} <span style={styles.favCount}>{favorites.length}</span>
+              <Heart size={16} fill={showFavs ? "currentColor" : "none"} />
+              <span style={styles.favCount}>{favorites.length}</span>
             </button>
           </div>
         </div>
@@ -254,10 +265,12 @@ export default function App() {
                       onClick={e => { e.stopPropagation(); openPreview(heroPhoto); }}
                     >Preview</button>
                     <button
-                      style={styles.heroBtn}
+                      style={{ ...styles.heroBtn, display: "inline-flex", alignItems: "center", gap: 6 }}
                       onClick={e => { e.stopPropagation(); downloadPhoto(heroPhoto); }}
                     >
-                      {downloadDone === heroPhoto.id ? "✓ Saved" : "↓ Download"}
+                      {downloadDone === heroPhoto.id
+                        ? <><Check size={14} /> Saved</>
+                        : <><Download size={14} /> Download</>}
                     </button>
                   </div>
                 </div>
@@ -310,10 +323,10 @@ export default function App() {
                 style={{ ...styles.previewImg, animation: "modalIn 0.22s ease" }}
               />
               {previewIndex > 0 && (
-                <button style={{ ...styles.modalNav, left: 14 }} onClick={() => navModal(-1)}>‹</button>
+                <button style={{ ...styles.modalNav, left: 14 }} onClick={() => navModal(-1)}><ChevronLeft size={20} /></button>
               )}
               {previewIndex < modalPhotos.length - 1 && (
-                <button style={{ ...styles.modalNav, right: 14 }} onClick={() => navModal(+1)}>›</button>
+                <button style={{ ...styles.modalNav, right: 14 }} onClick={() => navModal(+1)}><ChevronRight size={20} /></button>
               )}
             </div>
             <div style={styles.previewBar}>
@@ -330,14 +343,14 @@ export default function App() {
                   onClick={() => copyLink(preview)}
                   title="Copy link"
                 >
-                  {copyDone ? "✓" : "⎘"}
+                  {copyDone ? <Check size={18} /> : <Copy size={18} />}
                 </button>
                 <button
                   style={{ ...styles.actionBtn, ...(isFav(preview.id) ? styles.actionBtnFav : {}) }}
                   onClick={() => toggleFav(preview)}
                   title={isFav(preview.id) ? "Remove favorite" : "Add favorite"}
                 >
-                  {isFav(preview.id) ? "♥" : "♡"}
+                  <Heart size={18} fill={isFav(preview.id) ? "currentColor" : "none"} />
                 </button>
                 <button
                   style={{
@@ -347,11 +360,15 @@ export default function App() {
                   onClick={() => downloadPhoto(preview)}
                   title="Download"
                 >
-                  {downloading === preview.id ? "…" : downloadDone === preview.id ? "✓" : "↓"}
+                  {downloading === preview.id
+                    ? <Loader2 size={18} style={{ animation: "spin 0.7s linear infinite" }} />
+                    : downloadDone === preview.id
+                      ? <Check size={18} />
+                      : <Download size={18} />}
                 </button>
               </div>
             </div>
-            <button style={styles.closeBtn} onClick={closePreview}>×</button>
+            <button style={styles.closeBtn} onClick={closePreview}><X size={16} /></button>
           </div>
         </div>
       )}

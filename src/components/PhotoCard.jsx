@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Heart, Download, Check, Loader2 } from "lucide-react";
 import { styles } from "../styles/styles";
 
 export default function PhotoCard({
@@ -72,14 +73,18 @@ export default function PhotoCard({
             onClick={e => { e.stopPropagation(); onToggleFav(); }}
             title={isFav ? "Remove from favorites" : "Add to favorites"}
           >
-            {isFav ? "♥" : "♡"}
+            <Heart size={15} fill={isFav ? "currentColor" : "none"} />
           </button>
           <button
             style={{ ...styles.iconBtn, ...(isDownloadDone ? styles.iconBtnDone : {}) }}
             onClick={e => { e.stopPropagation(); onDownload(); }}
             title="Download"
           >
-            {isDownloadDone ? "✓" : isDownloading ? "…" : "↓"}
+            {isDownloadDone
+              ? <Check size={15} />
+              : isDownloading
+                ? <Loader2 size={15} style={{ animation: "spin 0.7s linear infinite" }} />
+                : <Download size={15} />}
           </button>
         </div>
       </div>
