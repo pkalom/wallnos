@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Heart, ChevronLeft, ChevronRight, Copy, Check, Download, Loader2, X } from "lucide-react";
 import type { Photo } from "../types";
 import { styles } from "../styles/styles";
@@ -32,19 +31,6 @@ export default function PreviewModal({
   downloadDone,
   onDownload,
 }: Props) {
-  useEffect(() => {
-    const scrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    return () => {
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      window.scrollTo(0, scrollY);
-    };
-  }, []);
-
   if (!preview) return null;
 
   return (
