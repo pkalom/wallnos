@@ -1,51 +1,53 @@
 # WallNos — Claude Kickstart
 
 ## What it is
-A wallpaper discovery app. Users browse/search photos (Unsplash API), preview, download, upload their own, and save favorites. Favorites require login.
+A wallpaper discovery app. Users browse/search Unsplash photos, preview, download, upload their own, and save favorites. Favorites require a login. Deployed at wallnos.vercel.app.
 
 ## Stack
 - **Frontend:** React 19 + TypeScript + Vite
 - **Styling:** Inline styles via `src/styles/styles.ts` + global CSS injected in `src/main.tsx`
-- **Auth + DB:** Supabase (email/password auth, favorites stored in `favorites` table)
-- **Deployment:** Vercel (auto-deploys on push to `main`)
+- **Auth + DB:** Supabase (email/password + Google OAuth, favorites in `favorites` table)
+- **Photos:** Unsplash API (falls back to demo photos if no API key)
+- **Uploads:** IndexedDB via `useUploads` hook (local only, not in Supabase)
+- **Deployment:** Vercel — auto-deploys on push to `main`
 - **Icons:** lucide-react
 
 ## Project structure
 ```
 src/
   components/
-    Header.tsx        # Search, categories, view modes, auth button
-    PhotoGrid.tsx     # Hero + grid of cards + infinite scroll sentinel
-    PhotoCard.tsx     # Single card with hover overlay
-    PreviewModal.tsx  # Full image modal with nav, download, favorite
-    UploadZone.tsx    # Drag-and-drop upload area
-    AuthModal.tsx     # Login / signup / forgot password modal
+    Header.tsx        # Search, categories, view modes, dark toggle, auth button
+    PhotoGrid.tsx     # Hero + skeleton loading + card grid + infinite scroll
+    PhotoCard.tsx     # Single card — shimmer placeholder, hover/tap overlay
+    PreviewModal.tsx  # Full image modal — swipe nav, download, favorite, copy
+    UploadZone.tsx    # Drag-and-drop / click-to-upload
+    AuthModal.tsx     # Login / signup / forgot password + success animation
   hooks/
-    useAuth.ts        # Supabase session, signOut
+    useAuth.ts        # Supabase session state, signOut
     useFavorites.ts   # Favorites CRUD against Supabase (requires login)
-    usePhotos.ts      # Unsplash API fetching + pagination
-    useUploads.ts     # Local uploaded images (browser memory)
+    usePhotos.ts      # Unsplash API fetch + pagination + demo fallback
+    useUploads.ts     # IndexedDB uploads (browser-local, not synced)
   lib/
-    supabase.ts       # Supabase client (falls back to placeholder if env missing)
+    supabase.ts       # Supabase client (placeholder fallback if env missing)
   styles/
-    styles.ts         # All inline style objects (CSSProperties)
+    styles.ts         # All CSSProperties style objects
   constants/
-    categories.ts     # Category list with Unsplash search queries
-  main.tsx            # Global CSS vars, keyframes, media queries, app mount
-  types.ts            # Photo type
+    categories.ts     # Category labels + Unsplash search queries + demo data
+  main.tsx            # CSS variables, keyframes, media queries, app entry
+  types.ts            # Photo type definition
+  vite-env.d.ts       # Vite import.meta.env types
 ```
 
 ## Environment variables
 ```
-VITE_UNSPLASH_ACCESS_KEY   # Unsplash API key (optional — falls back to demo photos)
+VITE_UNSPLASH_ACCESS_KEY   # Unsplash API key (optional — shows demo photos if missing)
 VITE_SUPABASE_URL          # https://oyfsbuwccadapgxyayzq.supabase.co
-VITE_SUPABASE_ANON_KEY     # Supabase anon/publishable key
+VITE_SUPABASE_ANON_KEY     # Legacy anon key (eyJ...) from Supabase → Settings → API Keys → Legacy tab
 ```
-Local: `.env` file (gitignored). Production: set in Vercel dashboard → Environment Variables.
+Local: `.env` file (gitignored). Production: Vercel → project Settings → Environment Variables.
 
 ## Supabase schema
 ```sql
--- favorites table
 create table favorites (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade not null,
@@ -60,15 +62,32 @@ create policy "Users can manage their own favorites"
 ```
 
 ## Key conventions
-- **All styles** are inline via `styles.ts` — no CSS files. Responsive overrides use CSS class names (e.g. `wallnos-grid`) targeted in the `<style>` block in `main.tsx`.
-- **No CSS modules, no Tailwind.**
-- Color theme uses CSS variables (`--bg`, `--text`, etc.) toggled by `body.dark` class.
-- Accent color: `linear-gradient(135deg, #8b5cf6, #ec4899)` (violet → pink).
-- Favorites: not stored if user is not logged in — clicking heart opens `AuthModal`.
-- Uploads: stored in browser memory only (not persisted to Supabase yet).
+- **All styles** are inline `CSSProperties` in `styles.ts` — no CSS files, no Tailwind, no CSS modules.
+- **Responsive overrides** use CSS class names (e.g. `wallnos-grid`, `wallnos-overlay`) targeted in the `<style>` block in `main.tsx`. Add a className + override there, don't touch inline styles for mobile.
+- **Theming** uses CSS variables (`--bg`, `--text`, `--border`, etc.) toggled by `body.dark` class. Dark mode preference saved in `localStorage`.
+- **Accent gradient:** `linear-gradient(135deg, #8b5cf6, #ec4899)` (violet → pink) — used on active pills, logo, buttons, auth modal.
+- **Favorites** require login — clicking heart when logged out opens `AuthModal`.
+- **Uploads** are IndexedDB only (not in Supabase).
+- **Swipe navigation** in `PreviewModal` via `onTouchStart`/`onTouchEnd` (50px threshold).
+- **Card overlays** always visible on touch devices via `@media (hover: none)` CSS.
+- **Skeleton loading** shows 12 shimmer cards (matching grid layout) instead of a spinner.
+
+## Mobile breakpoints (in main.tsx)
+| Breakpoint | Changes |
+|---|---|
+| `≤ 768px` | Header wraps, search full-width, view modes hidden, hero 260px, overlay centered |
+| `≤ 480px` | Grid 1 column, hero 200px |
+| `hover: none` | Card overlays always visible (touch devices) |
+
+## Auth flow
+- `useAuth` → Supabase session on mount + `onAuthStateChange` listener
+- Login success → 1.4s animated success screen → modal closes
+- Logout → 800ms checkmark animation → `supabase.auth.signOut()`
+- Google OAuth configured in Supabase but requires Google Cloud Console setup
 
 ## Dev
 ```bash
-npm run dev     # local dev server
+npm run dev     # local dev (reads .env)
 npm run build   # production build
+git push        # triggers Vercel auto-deploy
 ```
