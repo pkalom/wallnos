@@ -114,9 +114,9 @@ export const styles: StyleMap = {
     lineHeight: 1,
   },
   viewModeBtnActive: {
-    background: "var(--view-pill-bg)",
-    color: "var(--text)",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+    background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+    color: "#fff",
+    boxShadow: "0 2px 8px rgba(139,92,246,0.35)",
   },
   darkToggle: {
     background: "none",
@@ -147,9 +147,14 @@ export const styles: StyleMap = {
     flexShrink: 0,
   },
   favToggleActive: {
-    background: "var(--active-bg)",
-    borderColor: "var(--active-bg)",
-    color: "var(--active-text)",
+    background: "linear-gradient(135deg, #ef4444, #f97316)",
+    borderColor: "transparent",
+    color: "#fff",
+  },
+  uploadToggleActive: {
+    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    borderColor: "transparent",
+    color: "#fff",
   },
   favCount: {
     fontSize: 13,
@@ -178,9 +183,10 @@ export const styles: StyleMap = {
     transition: "all 0.15s",
   },
   catBtnActive: {
-    background: "var(--active-bg)",
-    borderColor: "var(--active-bg)",
-    color: "var(--active-text)",
+    background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+    borderColor: "transparent",
+    color: "#fff",
+    fontWeight: 600,
   },
   notice: {
     textAlign: "center",
@@ -222,11 +228,15 @@ export const styles: StyleMap = {
   },
   heroLabel: {
     fontSize: 11,
-    fontWeight: 600,
+    fontWeight: 700,
     letterSpacing: "1.5px",
     textTransform: "uppercase",
-    color: "rgba(255,255,255,0.55)",
-    marginBottom: 8,
+    color: "#fff",
+    marginBottom: 10,
+    background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+    display: "inline-block",
+    padding: "3px 12px",
+    borderRadius: 20,
   },
   heroTitle: {
     fontSize: 28,
@@ -482,7 +492,8 @@ export const styles: StyleMap = {
   },
   actionBtnDl: {
     color: "#fff",
-    background: "#1a1a1a",
+    background: "linear-gradient(135deg, #059669, #10b981)",
+    borderColor: "transparent",
   },
   actionBtnDone: {
     color: "#4ade80",

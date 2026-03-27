@@ -34,7 +34,7 @@ export default function PreviewModal({
   if (!preview) return null;
 
   return (
-    <div style={styles.overlay} onClick={closePreview}>
+    <div style={styles.overlay} className="wallnos-overlay" onClick={closePreview}>
       <div style={styles.overlayContent} className="wallnos-overlay-content" onClick={e => e.stopPropagation()}>
         <div style={{ position: "relative" }}>
           <img
@@ -42,6 +42,7 @@ export default function PreviewModal({
             src={preview.urls.regular}
             alt={preview.alt_description}
             style={{ ...styles.previewImg, animation: "modalIn 0.22s ease" }}
+            className="wallnos-preview-img"
           />
           {previewIndex > 0 && (
             <button
@@ -62,7 +63,7 @@ export default function PreviewModal({
             </button>
           )}
         </div>
-        <div style={styles.previewBar}>
+        <div style={styles.previewBar} className="wallnos-preview-bar">
           <div>
             <p style={styles.previewName}>{preview.user?.name}</p>
             <p style={styles.previewDesc}>{preview.alt_description || "Wallpaper"}</p>

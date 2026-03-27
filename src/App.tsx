@@ -3,10 +3,12 @@ import type { Photo } from "./types";
 import { CATEGORIES } from "./constants/categories";
 import { usePhotos } from "./hooks/usePhotos";
 import { useUploads } from "./hooks/useUploads";
+import { useAuth } from "./hooks/useAuth";
 import Header from "./components/Header";
 import PhotoGrid from "./components/PhotoGrid";
 import PreviewModal from "./components/PreviewModal";
 import UploadZone from "./components/UploadZone";
+import AuthModal from "./components/AuthModal";
 import { styles } from "./styles/styles";
 
 export default function App() {
@@ -27,6 +29,8 @@ export default function App() {
 
   const { photos, loading, hasMore, usingDemo, fetchPhotos } = usePhotos();
   const { uploads, addUpload, removeUpload } = useUploads();
+  const { user, authLoading, signOut } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -168,6 +172,9 @@ export default function App() {
         favCount={favorites.length}
         uploadCount={uploads.length}
         isFreshLoading={isFreshLoading}
+        user={user}
+        onLoginClick={() => setShowAuthModal(true)}
+        onSignOut={signOut}
       />
 
       {usingDemo && (
@@ -215,6 +222,10 @@ export default function App() {
         downloadDone={downloadDone}
         onDownload={downloadPhoto}
       />
+
+      {showAuthModal && !authLoading && (
+        <AuthModal onClose={() => setShowAuthModal(false)} />
+      )}
     </div>
   );
 }

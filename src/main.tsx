@@ -91,13 +91,27 @@ styleEl.textContent = `
     .wallnos-hero { height: 260px !important; }
     .wallnos-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .wallnos-grid-large { grid-template-columns: 1fr !important; }
+    .wallnos-overlay {
+      padding: 0 !important;
+      align-items: flex-end !important;
+    }
     .wallnos-overlay-content {
       width: 100% !important;
       max-width: 100% !important;
-      border-radius: 12px 12px 0 0 !important;
+      border-radius: 16px 16px 0 0 !important;
       position: fixed !important;
       bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
       max-height: 92vh !important;
+    }
+    .wallnos-preview-img {
+      max-height: 58vh !important;
+      object-fit: contain !important;
+      background: #000 !important;
+    }
+    .wallnos-preview-bar {
+      padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
     }
   }
 
