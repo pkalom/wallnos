@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/pkalom/wallnos/compare/mine-v1.4.0...mine-v1.5.0) (2026-03-27)
+
+
+### Features
+
+* favorites stored in Supabase, require login ([92bc82d](https://github.com/pkalom/wallnos/commit/92bc82d32e0e3f49035ee5de7f05ea59f07b09a2))
+* prevent crash when supabase env vars missing ([1e80289](https://github.com/pkalom/wallnos/commit/1e80289015656e0377231428d7c0d24e1003633f))
+
 ## [1.4.0](https://github.com/pkalom/wallnos/compare/mine-v1.3.0...mine-v1.4.0) (2026-03-27)
 
 
