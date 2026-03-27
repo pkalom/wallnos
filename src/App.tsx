@@ -10,6 +10,7 @@ import PhotoGrid from "./components/PhotoGrid";
 import PreviewModal from "./components/PreviewModal";
 import UploadZone from "./components/UploadZone";
 import AuthModal from "./components/AuthModal";
+import { supabase } from "./lib/supabase";
 import { styles } from "./styles/styles";
 
 export default function App() {
@@ -20,7 +21,7 @@ export default function App() {
   const [page, setPage] = useState(1);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [downloadDone, setDownloadDone] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("wp_dark") === "1");
+  const [darkMode, setDarkMode] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
   const [copyDone, setCopyDone] = useState(false);
   const [showUploads, setShowUploads] = useState(false);
@@ -36,10 +37,23 @@ export default function App() {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const modalPhotosRef = useRef<Photo[]>([]);
 
+  // Load dark mode preference from Supabase user metadata
+  useEffect(() => {
+    if (user) {
+      const pref = user.user_metadata?.dark_mode;
+      if (typeof pref === "boolean") setDarkMode(pref);
+    } else {
+      setDarkMode(false);
+    }
+  }, [user]);
+
+  // Save dark mode preference to Supabase when logged in
   useEffect(() => {
     document.body.classList.toggle("dark", darkMode);
-    try { localStorage.setItem("wp_dark", darkMode ? "1" : "0"); } catch {}
-  }, [darkMode]);
+    if (user) {
+      supabase.auth.updateUser({ data: { dark_mode: darkMode } });
+    }
+  }, [darkMode, user]);
 
   useEffect(() => {
     const query = search.trim() || CATEGORIES[activeCategory].query;

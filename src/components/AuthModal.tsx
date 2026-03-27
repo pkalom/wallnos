@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X, Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Mail, Lock, Loader2, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 interface Props {
@@ -16,8 +16,15 @@ export default function AuthModal({ onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loggedIn, setLoggedIn] = useState(false);
 
   const reset = () => { setError(""); setSuccess(""); };
+
+  useEffect(() => {
+    if (!loggedIn) return;
+    const t = setTimeout(() => onClose(), 1400);
+    return () => clearTimeout(t);
+  }, [loggedIn, onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +43,7 @@ export default function AuthModal({ onClose }: Props) {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        onClose();
+        setLoggedIn(true);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -49,6 +56,18 @@ export default function AuthModal({ onClose }: Props) {
     reset();
     await supabase.auth.signInWithOAuth({ provider: "google" });
   };
+
+  if (loggedIn) return (
+    <div style={overlay}>
+      <div style={{ ...modal, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: "48px 28px" }}>
+        <div style={{ animation: "scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
+          <CheckCircle size={64} color="#4ade80" strokeWidth={1.5} />
+        </div>
+        <p style={{ ...title, animation: "slideUp 0.4s ease 0.15s both" }}>Welcome back!</p>
+        <p style={{ ...subtitle, animation: "slideUp 0.4s ease 0.25s both" }}>Signing you in…</p>
+      </div>
+    </div>
+  );
 
   return (
     <div style={overlay} onClick={onClose}>
@@ -178,11 +197,11 @@ const modal: React.CSSProperties = {
   position: "relative",
   background: "var(--bg)",
   border: "1px solid var(--border)",
-  borderRadius: 20,
+  borderRadius: 24,
   padding: "32px 28px",
   width: "min(420px, 100%)",
-  boxShadow: "0 40px 80px rgba(0,0,0,0.4)",
-  animation: "modalIn 0.22s ease",
+  boxShadow: "0 8px 32px rgba(139,92,246,0.12), 0 40px 80px rgba(0,0,0,0.45)",
+  animation: "modalIn 0.28s cubic-bezier(0.34,1.56,0.64,1)",
 };
 
 const closeBtn: React.CSSProperties = {

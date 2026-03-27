@@ -66,6 +66,14 @@ styleEl.textContent = `
     from { opacity: 0; }
     to   { opacity: 1; }
   }
+  @keyframes scaleIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   ::-webkit-scrollbar { display: none; }
   body { background: var(--bg); transition: background 0.3s; }
@@ -99,10 +107,6 @@ styleEl.textContent = `
       width: 100% !important;
       max-width: 100% !important;
       border-radius: 16px 16px 0 0 !important;
-      position: fixed !important;
-      bottom: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
       max-height: 92vh !important;
       overflow-y: auto !important;
       -webkit-overflow-scrolling: touch !important;

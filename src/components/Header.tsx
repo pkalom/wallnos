@@ -1,5 +1,6 @@
+import { useState } from "react";
 import type { CSSProperties } from "react";
-import { Search, X, Sun, Moon, Heart, LayoutGrid, Columns2, Maximize2, Layers, Upload, LogIn, LogOut, User } from "lucide-react";
+import { Search, X, Sun, Moon, Heart, LayoutGrid, Columns2, Maximize2, Layers, Upload, LogIn, LogOut, User, Check } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { CATEGORIES } from "../constants/categories";
 import { styles } from "../styles/styles";
@@ -41,6 +42,8 @@ export default function Header({
   favCount, uploadCount, isFreshLoading,
   user, onLoginClick, onSignOut,
 }: Props) {
+  const [signingOut, setSigningOut] = useState(false);
+
   return (
     <header style={styles.header} className="wallnos-header">
       <div style={styles.headerInner} className="wallnos-header-inner">
@@ -93,12 +96,17 @@ export default function Header({
             {darkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           {user ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, animation: "slideUp 0.3s ease" }}>
               <div style={userAvatar} title={user.email}>
                 <User size={14} />
               </div>
-              <button style={styles.darkToggle} onClick={onSignOut} title="Sign out" aria-label="Sign out">
-                <LogOut size={16} />
+              <button
+                style={styles.darkToggle}
+                onClick={() => { setSigningOut(true); setTimeout(() => { onSignOut(); setSigningOut(false); }, 800); }}
+                title="Sign out"
+                aria-label="Sign out"
+              >
+                {signingOut ? <Check size={16} color="#4ade80" /> : <LogOut size={16} />}
               </button>
             </div>
           ) : (
