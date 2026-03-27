@@ -101,8 +101,25 @@ export default function PhotoGrid({
       )}
 
       {isFreshLoading && photos.length === 0 && (
-        <div style={{ display: "flex", justifyContent: "center", padding: "80px 0" }}>
-          <div style={styles.spinner} />
+        <div style={getGridStyle()} className={`wallnos-grid${viewMode === "large" ? "-large" : ""}`}>
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} style={{
+              ...styles.card,
+              ...(viewMode === "masonry" ? { aspectRatio: "auto", height: 240, marginBottom: 16, display: "inline-block", width: "100%" } : {}),
+              animation: "none",
+              overflow: "hidden",
+            }}>
+              <div style={{ position: "absolute", inset: 0, background: "var(--bg-card)" }}>
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  backgroundImage: "linear-gradient(90deg, transparent 0%, var(--shimmer-highlight) 50%, transparent 100%)",
+                  backgroundSize: "400px 100%",
+                  animation: `shimmer 1.4s ${i * 0.08}s infinite linear`,
+                }} />
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

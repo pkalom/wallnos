@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Heart, ChevronLeft, ChevronRight, Copy, Check, Download, Loader2, X } from "lucide-react";
 import type { Photo } from "../types";
 import { styles } from "../styles/styles";
@@ -31,11 +32,30 @@ export default function PreviewModal({
   downloadDone,
   onDownload,
 }: Props) {
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(delta) > 50) navModal(delta > 0 ? 1 : -1);
+    touchStartX.current = null;
+  };
+
   if (!preview) return null;
 
   return (
     <div style={styles.overlay} className="wallnos-overlay" onClick={closePreview}>
-      <div style={styles.overlayContent} className="wallnos-overlay-content" onClick={e => e.stopPropagation()}>
+      <div
+        style={styles.overlayContent}
+        className="wallnos-overlay-content"
+        onClick={e => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div style={{ position: "relative" }}>
           <img
             key={preview.id}

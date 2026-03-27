@@ -137,6 +137,10 @@ styleEl.textContent = `
     .wallnos-grid { grid-template-columns: 1fr !important; }
     .wallnos-hero { height: 200px !important; }
   }
+
+  @media (hover: none) {
+    .wallnos-card-overlay { opacity: 1 !important; }
+  }
 `;
 document.head.appendChild(styleEl);
 

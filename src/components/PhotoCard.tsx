@@ -76,7 +76,7 @@ export default function PhotoCard({
           loading="lazy"
         />
       </div>
-      <div style={{ ...styles.cardOverlay, opacity: hovered ? 1 : 0 }}>
+      <div style={{ ...styles.cardOverlay, opacity: hovered ? 1 : 0 }} className="wallnos-card-overlay">
         {photo.user?.name && (
           <p style={styles.cardPhotographer}>{photo.user.name}</p>
         )}
