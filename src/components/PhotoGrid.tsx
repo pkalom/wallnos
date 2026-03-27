@@ -76,9 +76,9 @@ export default function PhotoGrid({
       {heroPhoto && (
         <div style={styles.hero} className="wallnos-hero" onClick={() => onPreview(heroPhoto)}>
           <img src={heroPhoto.urls.regular} alt={heroPhoto.alt_description} style={styles.heroImg} />
-          <div style={styles.heroOverlay}>
-            <p style={styles.heroLabel}>Featured</p>
-            <p style={styles.heroTitle}>{heroPhoto.alt_description || "Beautiful Wallpaper"}</p>
+          <div style={styles.heroOverlay} className="wallnos-hero-overlay">
+            <p style={styles.heroLabel} className="wallnos-hero-label">Featured</p>
+            <p style={styles.heroTitle} className="wallnos-hero-title">{heroPhoto.alt_description || "Beautiful Wallpaper"}</p>
             <p style={styles.heroPhotographer}>by {heroPhoto.user?.name}</p>
             <div style={styles.heroActions}>
               <button

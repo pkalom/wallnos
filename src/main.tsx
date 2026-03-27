@@ -104,6 +104,8 @@ styleEl.textContent = `
       left: 0 !important;
       right: 0 !important;
       max-height: 92vh !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
     }
     .wallnos-preview-img {
       max-height: 58vh !important;
@@ -112,6 +114,18 @@ styleEl.textContent = `
     }
     .wallnos-preview-bar {
       padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    }
+    .wallnos-hero-overlay {
+      padding: 16px !important;
+    }
+    .wallnos-hero-title {
+      font-size: 18px !important;
+      margin-bottom: 4px !important;
+    }
+    .wallnos-hero-label {
+      font-size: 10px !important;
+      padding: 2px 8px !important;
+      margin-bottom: 6px !important;
     }
   }
 

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Heart, ChevronLeft, ChevronRight, Copy, Check, Download, Loader2, X } from "lucide-react";
 import type { Photo } from "../types";
 import { styles } from "../styles/styles";
@@ -31,6 +32,11 @@ export default function PreviewModal({
   downloadDone,
   onDownload,
 }: Props) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
   if (!preview) return null;
 
   return (
