@@ -134,21 +134,45 @@ export default function Header({
         </div>
       </div>
       {!showFavs && (
-        <div style={styles.categories}>
-          {CATEGORIES.map((cat, i) => (
-            <button
-              key={cat.label}
-              style={{ ...styles.catBtn, ...(activeCategory === i && !search ? styles.catBtnActive : {}) }}
-              onClick={() => { setActiveCategory(i); setSearch(""); }}
-            >
-              {cat.label}
-            </button>
-          ))}
+        <div style={{ position: "relative" }}>
+          <div style={styles.categories}>
+            {CATEGORIES.map((cat, i) => (
+              <button
+                key={cat.label}
+                style={{ ...styles.catBtn, ...(activeCategory === i && !search ? styles.catBtnActive : {}) }}
+                onClick={() => { setActiveCategory(i); setSearch(""); }}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+          <div style={fadeLeft} />
+          <div style={fadeRight} />
         </div>
       )}
     </header>
   );
 }
+
+const fadeLeft: CSSProperties = {
+  position: "absolute",
+  left: 0,
+  top: 0,
+  bottom: 0,
+  width: 32,
+  background: "linear-gradient(to right, var(--bg-header), transparent)",
+  pointerEvents: "none",
+};
+
+const fadeRight: CSSProperties = {
+  position: "absolute",
+  right: 0,
+  top: 0,
+  bottom: 0,
+  width: 48,
+  background: "linear-gradient(to left, var(--bg-header), transparent)",
+  pointerEvents: "none",
+};
 
 const loginBtn: CSSProperties = {
   display: "flex",

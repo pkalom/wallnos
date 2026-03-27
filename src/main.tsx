@@ -74,6 +74,10 @@ styleEl.textContent = `
     from { transform: translateY(16px); opacity: 0; }
     to   { transform: translateY(0);    opacity: 1; }
   }
+  @keyframes toastIn {
+    from { transform: translateX(24px) scale(0.95); opacity: 0; }
+    to   { transform: translateX(0)    scale(1);    opacity: 1; }
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   ::-webkit-scrollbar { display: none; }
   body { background: var(--bg); transition: background 0.3s; }

@@ -45,8 +45,8 @@ export default function PhotoGrid({
 }: Props) {
   const getGridStyle = () => {
     const fade = {
-      opacity: isFreshLoading && photos.length > 0 ? 0.35 : 1,
-      transition: "opacity 0.3s",
+      opacity: isFreshLoading ? 0 : 1,
+      transition: isFreshLoading ? "opacity 0.15s ease" : "opacity 0.4s ease",
     };
     if (viewMode === "masonry") return { columnWidth: "260px", columnGap: "16px", ...fade };
     if (viewMode === "large")   return { ...styles.gridLarge, ...fade };

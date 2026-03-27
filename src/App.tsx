@@ -10,6 +10,8 @@ import PhotoGrid from "./components/PhotoGrid";
 import PreviewModal from "./components/PreviewModal";
 import UploadZone from "./components/UploadZone";
 import AuthModal from "./components/AuthModal";
+import ToastContainer from "./components/Toast";
+import { useToast } from "./hooks/useToast";
 import { styles } from "./styles/styles";
 
 export default function App() {
@@ -29,6 +31,7 @@ export default function App() {
   const { uploads, addUpload, removeUpload } = useUploads();
   const { user, authLoading, signOut } = useAuth();
   const { favorites, toggleFav, isFav } = useFavorites(user);
+  const { toasts, showToast } = useToast();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -101,7 +104,9 @@ export default function App() {
 
   const handleToggleFav = (photo: Photo) => {
     if (!user) { setShowAuthModal(true); return; }
+    const adding = !isFav(photo.id);
     toggleFav(photo);
+    showToast(adding ? "Added to favorites" : "Removed from favorites", adding ? "❤️" : "🩶");
   };
 
   const downloadPhoto = async (photo) => {
@@ -116,6 +121,7 @@ export default function App() {
       a.click();
       URL.revokeObjectURL(url);
       setDownloadDone(photo.id);
+      showToast("Wallpaper saved!", "⬇️");
       setTimeout(() => setDownloadDone(d => d === photo.id ? null : d), 2000);
     } catch {
       window.open(photo.urls.full, "_blank");
@@ -128,6 +134,7 @@ export default function App() {
     try {
       await navigator.clipboard.writeText(photo.urls.regular);
       setCopyDone(true);
+      showToast("Link copied!", "🔗");
       setTimeout(() => setCopyDone(false), 2000);
     } catch {}
   };
@@ -230,6 +237,8 @@ export default function App() {
       {showAuthModal && !authLoading && (
         <AuthModal onClose={() => setShowAuthModal(false)} />
       )}
+
+      <ToastContainer toasts={toasts} />
     </div>
   );
 }
