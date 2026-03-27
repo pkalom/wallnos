@@ -4,6 +4,7 @@ import { CATEGORIES } from "./constants/categories";
 import { usePhotos } from "./hooks/usePhotos";
 import { useUploads } from "./hooks/useUploads";
 import { useAuth } from "./hooks/useAuth";
+import { useFavorites } from "./hooks/useFavorites";
 import Header from "./components/Header";
 import PhotoGrid from "./components/PhotoGrid";
 import PreviewModal from "./components/PreviewModal";
@@ -14,9 +15,6 @@ import { styles } from "./styles/styles";
 export default function App() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(0);
-  const [favorites, setFavorites] = useState<Photo[]>(() => {
-    try { return JSON.parse(localStorage.getItem("wp_favs") || "[]"); } catch { return []; }
-  });
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [showFavs, setShowFavs] = useState(false);
   const [page, setPage] = useState(1);
@@ -30,6 +28,7 @@ export default function App() {
   const { photos, loading, hasMore, usingDemo, fetchPhotos } = usePhotos();
   const { uploads, addUpload, removeUpload } = useUploads();
   const { user, authLoading, signOut } = useAuth();
+  const { favorites, toggleFav, isFav } = useFavorites(user);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -59,10 +58,6 @@ export default function App() {
   }, [search]);
 
   useEffect(() => {
-    try { localStorage.setItem("wp_favs", JSON.stringify(favorites)); } catch {}
-  }, [favorites]);
-
-  useEffect(() => {
     if (!loadMoreRef.current) return;
     observerRef.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore && !loading) {
@@ -90,15 +85,10 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [previewIndex]);
 
-  const toggleFav = (photo) => {
-    setFavorites(prev =>
-      prev.find(p => p.id === photo.id)
-        ? prev.filter(p => p.id !== photo.id)
-        : [...prev, photo]
-    );
+  const handleToggleFav = (photo: Photo) => {
+    if (!user) { setShowAuthModal(true); return; }
+    toggleFav(photo);
   };
-
-  const isFav = (id) => favorites.some(p => p.id === id);
 
   const downloadPhoto = async (photo) => {
     setDownloading(photo.id);
@@ -192,7 +182,7 @@ export default function App() {
           displayedPhotos={displayedPhotos}
           viewMode={viewMode}
           isFav={isFav}
-          onToggleFav={toggleFav}
+          onToggleFav={handleToggleFav}
           onPreview={openPreview}
           onDownload={downloadPhoto}
           downloading={downloading}
@@ -215,7 +205,7 @@ export default function App() {
         navModal={navModal}
         closePreview={closePreview}
         isFav={isFav}
-        onToggleFav={toggleFav}
+        onToggleFav={handleToggleFav}
         copyLink={copyLink}
         copyDone={copyDone}
         downloading={downloading}
