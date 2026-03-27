@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.6.0](https://github.com/pkalom/wallnos/compare/mine-v1.5.0...mine-v1.6.0) (2026-03-27)
+
+
+### Features
+
+* swipe navigation, tap overlay on mobile, skeleton loading cards ([da7b9f9](https://github.com/pkalom/wallnos/commit/da7b9f94558ceeefe23f3391a94fcd0b43d1c355))
+* toast notifications, category fade indicators, smooth page transitions ([ce552fb](https://github.com/pkalom/wallnos/commit/ce552fbb7022434bf5522f556ef9b22a2ddc2e4a))
+
+
+### Bug Fixes
+
+* center preview modal on iPhone instead of bottom sheet ([3bb7056](https://github.com/pkalom/wallnos/commit/3bb7056a0087079a5c3bdb092c94d4fb5ee7d4e1))
+* iOS scroll lock, modal position, auth animations, dark mode per user ([cb96f5a](https://github.com/pkalom/wallnos/commit/cb96f5a17cdb5b34d2e30c9c17fee89c584e9a1b))
+* modal scroll lock, hero text sizing, overlay alignment ([1ce0fec](https://github.com/pkalom/wallnos/commit/1ce0fec235508e987ce36bf30c1393c15709f27b))
+* scroll lock only when modal is open, restore iOS scrolling ([fe0044c](https://github.com/pkalom/wallnos/commit/fe0044c444a5a13e75b0b61b3592b241a18c05ce))
+
 ## [1.5.0](https://github.com/pkalom/wallnos/compare/mine-v1.4.0...mine-v1.5.0) (2026-03-27)
 
 
