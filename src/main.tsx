@@ -100,14 +100,14 @@ styleEl.textContent = `
     .wallnos-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .wallnos-grid-large { grid-template-columns: 1fr !important; }
     .wallnos-overlay {
-      padding: 0 !important;
-      align-items: flex-end !important;
+      padding: 12px !important;
+      align-items: center !important;
     }
     .wallnos-overlay-content {
       width: 100% !important;
       max-width: 100% !important;
-      border-radius: 16px 16px 0 0 !important;
-      max-height: 92vh !important;
+      border-radius: 20px !important;
+      max-height: 90vh !important;
       overflow-y: auto !important;
       -webkit-overflow-scrolling: touch !important;
     }
